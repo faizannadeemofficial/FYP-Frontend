@@ -27,7 +27,39 @@ const Dashboard = () => {
                 <div className="logo">
                     <img src={logo} className="logo-image" alt="CensorX Logo" />
                 </div>
-                <div className="profile-pic"></div>
+                <div
+                  className="profile-pic"
+                  style={{
+                    background: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.3rem',
+                    fontWeight: '400',
+                    color: '#fff',
+                    backgroundColor: 'rgba(44,62,80,0.8)',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    transition: 'box-shadow 0.2s',
+                  }}
+                  onClick={() => navigate('/profile')}
+                  title="View Profile"
+                  tabIndex={0}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/profile'); }}
+                >
+                  {(() => {
+                    try {
+                      const user = JSON.parse(localStorage.getItem('user'));
+                      return user && user.user_name
+                        ? user.user_name.charAt(0).toUpperCase()
+                        : '?';
+                    } catch {
+                      return '?';
+                    }
+                  })()}
+                </div>
             </header>
 
             <main className="main-content">

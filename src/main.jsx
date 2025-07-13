@@ -16,6 +16,7 @@ import ImageModerationOutput from './screens/ImageModeration.jsx';
 import Login from './screens/Login.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
 import RegisterPage from './screens/Register.jsx';
+import Profile from './screens/Profile.jsx';
 
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />
+  },
+  {
+    path: "/profile",
+    element: <RequireAuth><Profile /></RequireAuth>
   },
   {
     path: "/register",
