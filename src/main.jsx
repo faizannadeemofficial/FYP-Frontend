@@ -15,6 +15,7 @@ import MultimediaOutput from './screens/MultimediaModerationOutput.jsx';
 import ImageModerationOutput from './screens/ImageModeration.jsx';
 import Login from './screens/Login.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
+import RegisterPage from './screens/Register.jsx';
 
 
 const router = createBrowserRouter([
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />
   },
   {
     path: "/text",

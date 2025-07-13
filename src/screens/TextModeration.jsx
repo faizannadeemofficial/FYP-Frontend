@@ -194,9 +194,9 @@ const TextModeration = () => {
           </h1>
         </div>
 
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-700 to-green-600 flex items-center justify-center text-lg">
+        {/* <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-700 to-green-600 flex items-center justify-center text-lg">
           👤
-        </div>
+        </div> */}
       </header>
 
       {/* Main Content */}
@@ -298,7 +298,7 @@ const TextModeration = () => {
                 }}
                 placeholder="e.g., 🤐"
                 className={`w-full bg-white bg-opacity-10 rounded-lg px-3 py-2 text-white text-base outline-none border placeholder-white placeholder-opacity-40 ${customMaskCharInput ? 'border-green-500' : 'border-white border-opacity-20 focus:border-green-500'}`}
-                style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif', fontSize: 24, height: 48, borderWidth: 2, transition: 'border-color 0.2s' }}
+                style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif', fontSize: 18, height: 48, borderWidth: 2, transition: 'border-color 0.2s' }}
               />
             </div>
           </div>

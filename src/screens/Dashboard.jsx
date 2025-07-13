@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/dashboard.css';
 import logo from '../assets/logo.png'; // Adjust the path as necessary

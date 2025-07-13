@@ -61,14 +61,14 @@ const MultimediaModerationOutput = () => {
           </h1>
         </div>
         
-        <div style={{
+        {/* <div style={{
           width: '50px',
           height: '50px',
           borderRadius: '50%',
           background: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23666\'/%3E%3Ctext x=\'50\' y=\'55\' text-anchor=\'middle\' fill=\'white\' font-size=\'30\' font-family=\'Arial\'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E") center/cover',
           backgroundSize: 'cover'
         }}>
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content */}
