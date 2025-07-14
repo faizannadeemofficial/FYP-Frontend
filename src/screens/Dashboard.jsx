@@ -198,21 +198,23 @@ const Dashboard = () => {
                 <section className="activities-section">
                     <div className="activities-header">Activities</div>
                     <div className="activities-table">
-                        <div className="table-header">
+                        <div className="table-header" style={{ display: 'grid', gridTemplateColumns: '40px 1.5fr 2fr 1fr 1.5fr', alignItems: 'center' }}>
                             <div>#</div>
                             <div>Project Name</div>
                             <div>Input Content</div>
-                            <div>Modification Date</div>
-                            <div>Type</div>
+                            <div>Content Type</div>
+                            <div style={{ textAlign: 'right', paddingRight: '18px' }}>Modification Date</div>
                         </div>
                         {records.length === 0 ? (
                             <div style={{ padding: '1rem', textAlign: 'center' }}>No records found.</div>
                         ) : (
-                            records.map((rec, idx) => (
+                            records
+                              .filter(rec => rec.content_type !== 'TEXT_FILE')
+                              .map((rec, idx) => (
                                 <div
                                     className="table-row"
                                     key={rec.input_content_id}
-                                    style={{ cursor: 'pointer' }}
+                                    style={{ cursor: 'pointer', display: 'grid', gridTemplateColumns: '40px 1.5fr 2fr 1fr 1.5fr', alignItems: 'center' }}
                                     onClick={async () => {
                                         if (rec.content_type === 'TEXT') {
                                             try {
@@ -270,7 +272,6 @@ const Dashboard = () => {
                                                         projectName: rec.project_name,
                                                         outputPath: rec.output_content, // audio file path
                                                         profanityData,
-                                                        // No audioUrl, videoUrl, or moderatedVideoPath for audio
                                                         ...rec
                                                     }
                                                 });
@@ -279,7 +280,6 @@ const Dashboard = () => {
                                             }
                                         } else if (rec.content_type === 'VIDEO') {
                                             try {
-                                                // Call the processed_video API to get moderation data
                                                 const response = await fetch('http://localhost:5000/api/retrieve/processed_video', {
                                                     method: 'POST',
                                                     headers: {
@@ -289,7 +289,6 @@ const Dashboard = () => {
                                                     body: JSON.stringify({ input_content_id: rec.input_content_id })
                                                 });
                                                 const data = await response.json();
-                                                // Transform processed_video to imageDetections format expected by MultimediaModerationOutput
                                                 const imageDetections = Array.isArray(data.processed_video)
                                                     ? data.processed_video.map((item, idx) => ({
                                                         second: item.start_second,
@@ -297,7 +296,6 @@ const Dashboard = () => {
                                                         isFlagged: Array.isArray(item.video_detections) && item.video_detections.length > 0
                                                     }))
                                                     : [];
-                                                // Transform processed_audio to textModeratedData format
                                                 const textModeratedData = Array.isArray(data.processed_audio)
                                                     ? data.processed_audio.map(word => ({
                                                         FilteredWord: word.filtered_word,
@@ -321,7 +319,6 @@ const Dashboard = () => {
                                             }
                                         } else if (rec.content_type === 'IMAGE') {
                                             try {
-                                                // Call the processed_image API to get harmful detections
                                                 const response = await fetch('http://localhost:5000/api/retrieve/processed_image', {
                                                     method: 'POST',
                                                     headers: {
@@ -367,9 +364,9 @@ const Dashboard = () => {
                                         )}
                                     </div>
                                     <div>{rec.content_type}</div>
-                                    <div className="modification-date">{new Date(rec.modification_date).toLocaleString()}</div>
+                                    <div className="modification-date" style={{ textAlign: 'right', paddingRight: '18px' }}>{new Date(rec.modification_date).toLocaleString()}</div>
                                 </div>
-                            ))
+                              ))
                         )}
                     </div>
                 </section>
