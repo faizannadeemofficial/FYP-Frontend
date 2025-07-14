@@ -12,11 +12,12 @@ import TextModeration from './screens/TextModeration.jsx';
 import TextModerationOutput from './screens/TextModerationOutput.jsx';
 import FileUploadPage from './screens/FileUploadPage.jsx';
 import MultimediaOutput from './screens/MultimediaModerationOutput.jsx';
-import ImageModerationOutput from './screens/ImageModeration.jsx';
+import ImageModerationOutput from './screens/ImageModerationOutput.jsx';
 import Login from './screens/Login.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
 import RegisterPage from './screens/Register.jsx';
 import Profile from './screens/Profile.jsx';
+import ForgetPage from './screens/ForgetPage.jsx';
 
 
 const router = createBrowserRouter([
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterPage />
+  },
+  {
+    path: "/forget",
+    element: <ForgetPage />
   },
   {
     path: "/text",

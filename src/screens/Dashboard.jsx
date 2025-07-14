@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/dashboard.css';
 import logo from '../assets/logo.png'; // Adjust the path as necessary
@@ -7,18 +7,38 @@ import logo from '../assets/logo.png'; // Adjust the path as necessary
 const Dashboard = () => {
 
     const [records, setRecords] = useState([]);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const navigate = useNavigate();
+    const dropdownRef = useRef(null);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        if (!dropdownOpen) return;
+        function handleClick(e) {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [dropdownOpen]);
     useEffect(() => {
         fetch('http://localhost:5000/api/retrieve/', {
             method: 'POST',
             headers: {
-                'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InRhc2hmZWVuQGdtYWlsLmNvbSIsInVzZXJfbmFtZSI6IlRhc2hmZWVuIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc1MjQ5NzMwMn0.gCjAkCNzrTK5NB6x97wJmznEC96AjfMYDZnYEv6OYi8',
+                'Authorization': localStorage.getItem('auth_token'),
                 'Content-Type': 'application/json',
             },
         })
-        .then(res => res.json())
-        .then(data => setRecords(data))
-        .catch(err => console.error('Error fetching records:', err));
+            .then(res => res.json())
+            .then(data => {
+                // Ensure records is always an array
+                setRecords(Array.isArray(data) ? data : []);
+            })
+            .catch(err => {
+                setRecords([]);
+                console.error('Error fetching records:', err);
+            });
     }, []);
 
     return (
@@ -27,58 +47,152 @@ const Dashboard = () => {
                 <div className="logo">
                     <img src={logo} className="logo-image" alt="CensorX Logo" />
                 </div>
-                <div
-                  className="profile-pic"
-                  style={{
-                    background: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.3rem',
-                    fontWeight: '400',
-                    color: '#fff',
-                    backgroundColor: 'rgba(44,62,80,0.8)',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    cursor: 'pointer',
-                    transition: 'box-shadow 0.2s',
-                  }}
-                  onClick={() => navigate('/profile')}
-                  title="View Profile"
-                  tabIndex={0}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/profile'); }}
-                >
-                  {(() => {
-                    try {
-                      const user = JSON.parse(localStorage.getItem('user'));
-                      return user && user.user_name
-                        ? user.user_name.charAt(0).toUpperCase()
-                        : '?';
-                    } catch {
-                      return '?';
-                    }
-                  })()}
+                <div style={{ position: 'relative' }} ref={dropdownRef}>
+                    <div
+                        className="profile-pic"
+                        style={{
+                            background: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.3rem',
+                            fontWeight: '400',
+                            color: '#fff',
+                            backgroundColor: 'rgba(44,62,80,0.8)',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            transition: 'box-shadow 0.2s',
+                        }}
+                        onClick={() => setDropdownOpen(v => !v)}
+                        title="Account"
+                        tabIndex={0}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setDropdownOpen(v => !v); }}
+                    >
+                        {(() => {
+                            try {
+                                const user = JSON.parse(localStorage.getItem('user'));
+                                return user && user.user_name
+                                    ? user.user_name.charAt(0).toUpperCase()
+                                    : '?';
+                            } catch {
+                                return '?';
+                            }
+                        })()}
+                    </div>
+                    {dropdownOpen && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '110%',
+                                right: 0,
+                                minWidth: '120px',
+                                background: 'rgba(44,62,80,0.98)',
+                                color: '#fff',
+                                borderRadius: '10px',
+                                boxShadow: '0 4px 16px rgba(44,62,80,0.18)',
+                                zIndex: 100,
+                                padding: '8px 0',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                        >
+                            <button
+                                style={{
+                                    width: '100%',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#fff',
+                                    padding: '10px 18px',
+                                    textAlign: 'left',
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    borderRadius: 0,
+                                    transition: 'background 0.15s',
+                                }}
+                                onClick={() => { setDropdownOpen(false); navigate('/profile'); }}
+                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setDropdownOpen(false); navigate('/profile'); } }}
+                            >
+                                Profile
+                            </button>
+                            <button
+                                style={{
+                                    width: '100%',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#fff',
+                                    padding: '10px 18px',
+                                    textAlign: 'left',
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    borderRadius: 0,
+                                    transition: 'background 0.15s',
+                                }}
+                                onClick={async () => {
+                                    setDropdownOpen(false);
+                                    const refreshToken = localStorage.getItem('refresh_token');
+                                    // Remove tokens from localStorage
+                                    localStorage.removeItem('auth_token');
+                                    localStorage.removeItem('refresh_token');
+                                    localStorage.removeItem('user');
+                                    // Call logout API if refresh token exists
+                                    if (refreshToken) {
+                                        try {
+                                            await fetch('http://localhost:5000/api/auth/logout', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ refresh_token: refreshToken })
+                                            });
+                                        } catch (err) {
+                                            // Optionally handle error
+                                        }
+                                    }
+                                    navigate('/login');
+                                }}
+                                onKeyDown={async e => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        setDropdownOpen(false);
+                                        const refreshToken = localStorage.getItem('refresh_token');
+                                        localStorage.removeItem('auth_token');
+                                        localStorage.removeItem('refresh_token');
+                                        localStorage.removeItem('user');
+                                        if (refreshToken) {
+                                            try {
+                                                await fetch('http://localhost:5000/api/auth/logout', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ refresh_token: refreshToken })
+                                                });
+                                            } catch (err) {}
+                                        }
+                                        navigate('/login');
+                                    }
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    )}
                 </div>
             </header>
 
             <main className="main-content">
                 <section className="main-cards">
-                        <div className="card" onClick={() => window.location.href = '/text'} style={{ cursor: 'pointer' }}>
-                            <div className="card-image text-moderation-img"></div>
-                            <div className="card-content">
-                                <h3>Text Moderation</h3>
-                                <p>Detect and filter offensive words instantly, ensuring clean and professional communication.</p>
-                            </div>
+                    <div className="card" onClick={() => window.location.href = '/text'} style={{ cursor: 'pointer' }}>
+                        <div className="card-image text-moderation-img"></div>
+                        <div className="card-content">
+                            <h3>Text Moderation</h3>
+                            <p>Detect and filter offensive words instantly, ensuring clean and professional communication.</p>
                         </div>
+                    </div>
 
-                        <div className="card" onClick={() => window.location.href = '/upload'} style={{ cursor: 'pointer' }}>
-                            <div className="card-image multimedia-img"></div>
-                            <div className="card-content">
-                                <h3>Multimedia Moderation</h3>
-                                <p>Analyze and censor abusive language in multimedia content for a safer digital experience.</p>
-                            </div>
+                    <div className="card" onClick={() => window.location.href = '/upload'} style={{ cursor: 'pointer' }}>
+                        <div className="card-image multimedia-img"></div>
+                        <div className="card-content">
+                            <h3>Multimedia Moderation</h3>
+                            <p>Analyze and censor abusive language in multimedia content for a safer digital experience.</p>
                         </div>
+                    </div>
                 </section>
 
                 <section className="activities-section">
@@ -87,7 +201,7 @@ const Dashboard = () => {
                         <div className="table-header">
                             <div>#</div>
                             <div>Project Name</div>
-                            <div>Content</div>
+                            <div>Input Content</div>
                             <div>Modification Date</div>
                             <div>Type</div>
                         </div>
@@ -137,7 +251,7 @@ const Dashboard = () => {
                                                     method: 'POST',
                                                     headers: {
                                                         'Content-Type': 'application/json',
-                                                        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InRhc2hmZWVuQGdtYWlsLmNvbSIsInVzZXJfbmFtZSI6IlRhc2hmZWVuIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc1MjQ5NzMwMn0.gCjAkCNzrTK5NB6x97wJmznEC96AjfMYDZnYEv6OYi8'
+                                                        'Authorization': localStorage.getItem('auth_token')
                                                     },
                                                     body: JSON.stringify({ input_content_id: rec.input_content_id })
                                                 });
@@ -154,27 +268,85 @@ const Dashboard = () => {
                                                 navigate('/multimedia-output', {
                                                     state: {
                                                         projectName: rec.project_name,
-                                                        outputPath: rec.output_content,
-                                                        audioUrl: rec.input_content,
-                                                        moderatedVideoPath: rec.output_content,
+                                                        outputPath: rec.output_content, // audio file path
                                                         profanityData,
+                                                        // No audioUrl, videoUrl, or moderatedVideoPath for audio
                                                         ...rec
                                                     }
                                                 });
                                             } catch (err) {
                                                 alert('Failed to fetch processed audio data.');
                                             }
+                                        } else if (rec.content_type === 'VIDEO') {
+                                            try {
+                                                // Call the processed_video API to get moderation data
+                                                const response = await fetch('http://localhost:5000/api/retrieve/processed_video', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': localStorage.getItem('auth_token')
+                                                    },
+                                                    body: JSON.stringify({ input_content_id: rec.input_content_id })
+                                                });
+                                                const data = await response.json();
+                                                // Transform processed_video to imageDetections format expected by MultimediaModerationOutput
+                                                const imageDetections = Array.isArray(data.processed_video)
+                                                    ? data.processed_video.map((item, idx) => ({
+                                                        second: item.start_second,
+                                                        harmful_detected: item.video_detections || [],
+                                                        isFlagged: Array.isArray(item.video_detections) && item.video_detections.length > 0
+                                                    }))
+                                                    : [];
+                                                // Transform processed_audio to textModeratedData format
+                                                const textModeratedData = Array.isArray(data.processed_audio)
+                                                    ? data.processed_audio.map(word => ({
+                                                        FilteredWord: word.filtered_word,
+                                                        IsProfane: word.is_flagged === 'true',
+                                                        OriginalWord: word.original_word,
+                                                        Start: word.start_time,
+                                                        End: word.end_time
+                                                    }))
+                                                    : [];
+                                                navigate('/multimedia-output', {
+                                                    state: {
+                                                        projectName: rec.project_name,
+                                                        moderatedVideoPath: rec.output_content, // video file path
+                                                        imageDetections,
+                                                        textModeratedData,
+                                                        ...rec
+                                                    }
+                                                });
+                                            } catch (err) {
+                                                alert('Failed to fetch processed video data.');
+                                            }
+                                        } else if (rec.content_type === 'IMAGE') {
+                                            try {
+                                                // Call the processed_image API to get harmful detections
+                                                const response = await fetch('http://localhost:5000/api/retrieve/processed_image', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': localStorage.getItem('auth_token')
+                                                    },
+                                                    body: JSON.stringify({ input_content_id: rec.input_content_id })
+                                                });
+                                                const harmfulDetections = await response.json();
+                                                navigate('/image-output', {
+                                                    state: {
+                                                        projectName: rec.project_name,
+                                                        bluredImagePath: rec.output_content,
+                                                        harmfulDetected: Array.isArray(harmfulDetections) ? harmfulDetections : [],
+                                                        imageUrl: rec.input_content,
+                                                        ...rec
+                                                    }
+                                                });
+                                            } catch (err) {
+                                                alert('Failed to fetch processed image data.');
+                                            }
                                         } else {
                                             navigate('/multimedia-output', {
                                                 state: {
                                                     projectName: rec.project_name,
-                                                    outputPath: rec.output_content,
-                                                    audioUrl: rec.input_content,
-                                                    videoUrl: rec.input_content,
-                                                    moderatedVideoPath: rec.output_content,
-                                                    imageDetections: rec.imageDetections || [],
-                                                    textModeratedData: rec.textModeratedData || [],
-                                                    profanityData: rec.profanityData || [],
                                                     ...rec
                                                 }
                                             });

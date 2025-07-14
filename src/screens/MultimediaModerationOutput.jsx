@@ -13,12 +13,16 @@ const MultimediaModerationOutput = () => {
     videoUrl,
     moderatedVideoPath,
     imageDetections,
-    textModeratedData
+    textModeratedData,
+    input_content,
+    output_content,
+    // ...other possible fields
   } = location.state || {};
 
-  // Determine if this is a video result
+  // Determine content type
   const isVideo = !!(moderatedVideoPath || videoUrl);
-  const isAudio = !!audioUrl && !isVideo;
+  const isAudio = !!audioUrl && !isVideo && !!outputPath;
+  const isImage = !isVideo && !isAudio && Array.isArray(imageDetections) && imageDetections.length > 0;
 
   // For video, use textModeratedData for stats; for audio, use profanityData
   const textData = isVideo ? textModeratedData : profanityData;
@@ -46,8 +50,8 @@ const MultimediaModerationOutput = () => {
           alignItems: 'center',
           gap: '15px'
         }}>
-          <ArrowLeft 
-            size={24} 
+          <ArrowLeft
+            size={24}
             style={{ cursor: 'pointer', opacity: 0.7 }}
             onClick={() => window.history.back()}
           />
@@ -60,7 +64,7 @@ const MultimediaModerationOutput = () => {
             {projectName}
           </h1>
         </div>
-        
+
         {/* <div style={{
           width: '50px',
           height: '50px',
@@ -79,20 +83,17 @@ const MultimediaModerationOutput = () => {
       }}>
 
 
-        {/* Moderated Audio/Video & Results Split */}
-        <div style={{ display: 'flex', gap: 24, marginTop: 0 }}>
-          {/* Left: Moderation Results */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-            minWidth: 0
-          }}>
-            {/* Show ModerationCategories for video, not audio. Pass harmful detections as prop */}
-            {/* {isVideo && <ModerationCategories imageDetections={imageDetections} />} */}
-            {/* Harmful Detections per for video */}
-            {isVideo && Array.isArray(imageDetections) && imageDetections.length > 0 && (
+        {/* Content Layout for Image, Video, or Audio */}
+        {isImage ? (
+          <div style={{ display: 'flex', gap: 24, marginTop: 0 }}>
+            {/* Left: Harmful Detections */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 20,
+              minWidth: 0
+            }}>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
                 borderRadius: '16px',
@@ -104,211 +105,283 @@ const MultimediaModerationOutput = () => {
                 fontFamily: 'inherit',
                 lineHeight: 1.6
               }}>
-                <div style={{ fontWeight: 600, marginBottom: 10 }}>Harmful Detections (per second):</div>
+                <div style={{ fontWeight: 600, marginBottom: 10 }}>Harmful Detections:</div>
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                  {imageDetections.map((det, idx) => (
-                    <li key={idx} style={{ marginBottom: 6 }}>
-                      <span style={{ fontWeight: 500, color: det.isFlagged ? '#ff6b6b' : '#aaa' }}>Second {det.second}:</span>
-                      {det.harmful_detected && det.harmful_detected.length > 0 ? (
-                        <span style={{ marginLeft: 8, color: '#ffb347' }}>{det.harmful_detected.join(', ')}</span>
-                      ) : (
-                        <span style={{ marginLeft: 8, color: '#aaa' }}>No harmful content</span>
-                      )}
-                    </li>
-                  ))}
+                  {imageDetections[0].harmful_detected && imageDetections[0].harmful_detected.length > 0 ? (
+                    imageDetections[0].harmful_detected.map((det, idx) => (
+                      <li key={idx} style={{ marginBottom: 6, color: '#ffb347' }}>{det}</li>
+                    ))
+                  ) : (
+                    <li style={{ color: '#aaa' }}>No harmful content detected.</li>
+                  )}
                 </ul>
               </div>
-            )}
-            {/* Text Moderation Results (for video or audio) */}
+            </div>
+            {/* Right: Image Display */}
             <div style={{
               flex: 1,
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '16px',
-              padding: '30px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              lineHeight: '1.6',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 20,
+              minWidth: 0,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '16px',
+                padding: '30px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                minWidth: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 320,
+                width: '100%'
+              }}>
+                {output_content ? (
+                  <img
+                    src={`http://localhost:5000/stream/${output_content.split('/').pop()}`}
+                    alt={projectName}
+                    style={{ maxWidth: '100%', maxHeight: 260, borderRadius: 12, background: '#222' }}
+                  />
+                ) : (
+                  <span style={{ color: '#ccc' }}>No image file available.</span>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          // ...existing code for video/audio...
+          <div style={{ display: 'flex', gap: 24, marginTop: 0 }}>
+            {/* Left: Moderation Results */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 20,
               minWidth: 0
             }}>
+              {/* Harmful Detections per for video */}
+              {isVideo && Array.isArray(imageDetections) && imageDetections.length > 0 && (
+                <div style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: '16px',
+                  padding: '20px 30px',
+                  marginBottom: 10,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#fff',
+                  fontSize: 16,
+                  fontFamily: 'inherit',
+                  lineHeight: 1.6
+                }}>
+                  <div style={{ fontWeight: 600, marginBottom: 10 }}>Harmful Detections (per second):</div>
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    {imageDetections.map((det, idx) => (
+                      <li key={idx} style={{ marginBottom: 6 }}>
+                        <span style={{ fontWeight: 500, color: det.isFlagged ? '#ff6b6b' : '#aaa' }}>Second {det.second}:</span>
+                        {det.harmful_detected && det.harmful_detected.length > 0 ? (
+                          <span style={{ marginLeft: 8, color: '#ffb347' }}>{det.harmful_detected.join(', ')}</span>
+                        ) : (
+                          <span style={{ marginLeft: 8, color: '#aaa' }}>No harmful content</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {/* Text Moderation Results (for video or audio) */}
               <div style={{
-                fontSize: '16px',
-                color: 'rgba(255, 255, 255, 0.9)',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px 8px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Segoe UI", Roboto, Arial, sans-serif',
+                flex: 1,
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '16px',
+                padding: '30px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                lineHeight: '1.6',
+                minWidth: 0
               }}>
-                <style>{`
-                  .tm-profane-word .tm-tooltip {
-                    visibility: hidden;
-                    opacity: 0;
-                    transition: opacity 0.2s;
-                  }
-                  .tm-profane-word:hover .tm-tooltip {
-                    visibility: visible;
-                    opacity: 1;
-                  }
-                `}</style>
-                {Array.isArray(textData) && textData.length > 0 ?
-                  textData.map((item, idx) =>
-                    item.IsProfane ? (
-                      <span
-                        key={idx}
-                        className="tm-profane-word"
-                        style={{
-                          color: '#FFA500',
-                          fontWeight: 700,
-                          background: 'rgba(255,255,255,0.08)',
-                          borderRadius: 6,
-                          padding: '2px 8px',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          display: 'inline-block',
-                          fontFamily: 'inherit',
-                          fontSize: 'inherit',
-                        }}
-                      >
+                <div style={{
+                  fontSize: '16px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '6px 8px',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Segoe UI", Roboto, Arial, sans-serif',
+                }}>
+                  <style>{`
+                    .tm-profane-word .tm-tooltip {
+                      visibility: hidden;
+                      opacity: 0;
+                      transition: opacity 0.2s;
+                    }
+                    .tm-profane-word:hover .tm-tooltip {
+                      visibility: visible;
+                      opacity: 1;
+                    }
+                  `}</style>
+                  {Array.isArray(textData) && textData.length > 0 ?
+                    textData.map((item, idx) =>
+                      item.IsProfane ? (
                         <span
-                          className="tm-tooltip"
+                          key={idx}
+                          className="tm-profane-word"
                           style={{
-                            position: 'absolute',
-                            left: '50%',
-                            top: '-32px',
-                            transform: 'translateX(-50%)',
-                            background: '#222',
-                            color: '#fff',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '15px',
-                            fontWeight: 500,
-                            whiteSpace: 'nowrap',
-                            zIndex: 10,
-                            pointerEvents: 'none',
+                            color: '#FFA500',
+                            fontWeight: 700,
+                            background: 'rgba(255,255,255,0.08)',
+                            borderRadius: 6,
+                            padding: '2px 8px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            display: 'inline-block',
+                            fontFamily: 'inherit',
+                            fontSize: 'inherit',
                           }}
                         >
-                          {item.OriginalWord}
+                          <span
+                            className="tm-tooltip"
+                            style={{
+                              position: 'absolute',
+                              left: '50%',
+                              top: '-32px',
+                              transform: 'translateX(-50%)',
+                              background: '#222',
+                              color: '#fff',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '15px',
+                              fontWeight: 500,
+                              whiteSpace: 'nowrap',
+                              zIndex: 10,
+                              pointerEvents: 'none',
+                            }}
+                          >
+                            {item.OriginalWord}
+                          </span>
+                          {item.FilteredWord}
                         </span>
-                        {item.FilteredWord}
-                      </span>
-                    ) : (
-                      <span key={idx}>{item.FilteredWord}</span>
+                      ) : (
+                        <span key={idx}>{item.FilteredWord}</span>
+                      )
                     )
-                  )
-                  : <span style={{ color: '#ccc' }}>No moderation data available.</span>
-                }
-              </div>
-            </div>
-          </div>
-          {/* Right: Audio/Video Player and Stats */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-            minWidth: 0
-          }}>
-            {/* Stats Cards */}
-            <div style={{ display: 'flex', gap: 20, marginBottom: 0 }}>
-              {/* Total Words Card */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '16px',
-                padding: '30px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <div style={{
-                  fontSize: '48px',
-                  fontWeight: '600',
-                  lineHeight: '1',
-                  marginBottom: '10px'
-                }}>
-                  {totalWords}
-                </div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '400',
-                  color: 'rgba(255, 255, 255, 0.8)'
-                }}>
-                  Total words
-                </div>
-              </div>
-              {/* Profane Words Card */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '16px',
-                padding: '30px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <div style={{
-                  fontSize: '48px',
-                  fontWeight: '600',
-                  lineHeight: '1',
-                  marginBottom: '10px'
-                }}>
-                  {profaneWords}
-                </div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '400',
-                  color: 'rgba(255, 255, 255, 0.8)'
-                }}>
-                  Profane words
+                    : <span style={{ color: '#ccc' }}>No moderation data available.</span>
+                  }
                 </div>
               </div>
             </div>
-            {/* Moderated Audio/Video */}
+            {/* Right: Audio/Video Player and Stats */}
             <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '16px',
-              padding: '30px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              minWidth: 0,
+              flex: 1,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: isVideo ? 320 : 120
+              flexDirection: 'column',
+              gap: 20,
+              minWidth: 0
             }}>
-              {isVideo ? (
-                (moderatedVideoPath || videoUrl) ? (
-                  <video
-                    src={moderatedVideoPath ? `http://localhost:5000/stream/${moderatedVideoPath.split('/').pop()}` : videoUrl}
+              {/* Stats Cards */}
+              <div style={{ display: 'flex', gap: 20, marginBottom: 0 }}>
+                {/* Total Words Card */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '16px',
+                  padding: '30px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '48px',
+                    fontWeight: '600',
+                    lineHeight: '1',
+                    marginBottom: '10px'
+                  }}>
+                    {totalWords}
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    color: 'rgba(255, 255, 255, 0.8)'
+                  }}>
+                    Total words
+                  </div>
+                </div>
+                {/* Profane Words Card */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '16px',
+                  padding: '30px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '48px',
+                    fontWeight: '600',
+                    lineHeight: '1',
+                    marginBottom: '10px'
+                  }}>
+                    {profaneWords}
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    color: 'rgba(255, 255, 255, 0.8)'
+                  }}>
+                    Profane words
+                  </div>
+                </div>
+              </div>
+              {/* Moderated Audio/Video */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '16px',
+                padding: '30px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                minWidth: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: isVideo ? 320 : 120
+              }}>
+                {isVideo ? (
+                  (moderatedVideoPath || videoUrl) ? (
+                    <video
+                      src={moderatedVideoPath ? `http://localhost:5000/stream/${moderatedVideoPath.split('/').pop()}` : videoUrl}
+                      controls
+                      style={{ width: '100%', height: '100%', borderRadius: 12, background: '#222' }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <span style={{ color: '#ccc' }}>No video file available.</span>
+                  )
+                ) : outputPath ? (
+                  <audio
+                    src={`http://localhost:5000/stream/${outputPath.split('/').pop()}`}
                     controls
-                    style={{ width: '100%', height: '100%', borderRadius: 12, background: '#222' }}
+                    style={{ width: '100%', borderRadius: 12, background: '#222' }}
                   >
-                    Your browser does not support the video tag.
-                  </video>
+                    Your browser does not support the audio tag.
+                  </audio>
                 ) : (
-                  <span style={{ color: '#ccc' }}>No video file available.</span>
-                )
-              ) : outputPath ? (
-                <audio
-                  src={`http://localhost:5000/stream/${outputPath.split('/').pop()}`}
-                  controls
-                  style={{ width: '100%', borderRadius: 12, background: '#222' }}
-                >
-                  Your browser does not support the audio tag.
-                </audio>
-              ) : (
-                <span style={{ color: '#ccc' }}>No audio file available.</span>
-              )}
+                  <span style={{ color: '#ccc' }}>No audio file available.</span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
