@@ -18,6 +18,7 @@ import RequireAuth from './components/RequireAuth.jsx';
 import RegisterPage from './screens/Register.jsx';
 import Profile from './screens/Profile.jsx';
 import ForgetPage from './screens/ForgetPage.jsx';
+import TextFileModerationOutput from './screens/TextFileOutput.jsx';
 
 
 const router = createBrowserRouter([
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
   {
     path: "/text-output",
     element: <RequireAuth><TextModerationOutput /></RequireAuth>
+  },
+  {
+    path: "/textfile-output",
+    element: <RequireAuth><TextFileModerationOutput /></RequireAuth>
   },
   {
     path: "/upload",

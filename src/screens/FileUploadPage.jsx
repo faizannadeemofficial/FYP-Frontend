@@ -61,23 +61,28 @@ const FileUploadPage = () => {
   }, []);
 
   // New function to handle file selection and validation
-  const handleFileChange = (file) => {
-    if (!file) return;
+  const handleFileChange = (file) => {
+    if (!file) return;
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setFileError(`File size exceeds the ${MAX_FILE_SIZE_MB}MB limit.`);
-      setSelectedFile(null);
-      setInputText('');
-    } else if (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/')) {
-      setSelectedFile(file);
-      setInputText(file.name);
-      setFileError('');
-    } else {
-      setFileError('Unsupported file type. Please upload an image, audio, or video file.');
-      setSelectedFile(null);
-      setInputText('');
-    }
-  };
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileError(`File size exceeds the ${MAX_FILE_SIZE_MB}MB limit.`);
+      setSelectedFile(null);
+      setInputText('');
+    } else if (
+      file.type.startsWith('image/') ||
+      file.type.startsWith('audio/') ||
+      file.type.startsWith('video/') ||
+      file.name.endsWith('.txt')
+    ) {
+      setSelectedFile(file);
+      setInputText(file.name);
+      setFileError('');
+    } else {
+      setFileError('Unsupported file type. Please upload an image, audio, video, or txt file.');
+      setSelectedFile(null);
+      setInputText('');
+    }
+  }
 
   const handleSubmit = async () => {
     if (!selectedFile) {
@@ -85,101 +90,131 @@ const FileUploadPage = () => {
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      let response, data;
-      const authToken = localStorage.getItem('auth_token');
-      if (selectedFile.type.startsWith('image/')) {
-        // Image Moderation
-        const formData = new FormData();
-        formData.append('image', selectedFile);
-        formData.append('blur_radius', imageSliderValue.toString());
-        formData.append('project_name', projectName || 'image_project_1');
-        response = await fetch('http://localhost:5000/imgmoderation', {
-          method: 'POST',
-          headers: {
-            'Authorization': authToken
-          },
-          body: formData
-        });
-        if (response.ok) {
-          data = await response.json();
-          navigate('/image-output', {
-            state: {
-              bluredImagePath: data.blured_image_path,
-              harmfulDetected: data.harmful_detected,
-              isFlagged: data.isFlagged,
-              projectName: projectName || 'image_project_1',
-              imageUrl: URL.createObjectURL(selectedFile),
-              blurRadius: imageSliderValue,
-              originalFileName: selectedFile.name
-            }
-          });
-        } else {
-          alert('Image moderation failed.');
-        }
-      } else if (selectedFile.type.startsWith('audio/')) {
-        // Audio Moderation
-        const formData = new FormData();
-        formData.append('audio', selectedFile);
-        formData.append('mask_char', maskCharacter);
-        customWords.forEach(word => formData.append('words', word));
-        formData.append('project_name', projectName || 'audio_project_1');
-        response = await fetch('http://localhost:5000/audiomoderation', {
-          method: 'POST',
-          headers: {
-            'Authorization': authToken
-          },
-          body: formData
-        });
-        if (response.ok) {
-          data = await response.json();
-          navigate('/multimedia-output', {
-            state: {
-              outputPath: data.output_path,
-              profanityData: data.profanity_data,
-              projectName: projectName || 'audio_project_1',
-              audioUrl: URL.createObjectURL(selectedFile)
-            }
-          });
-        } else {
-          alert('Audio moderation failed.');
-        }
-      } else if (selectedFile.type.startsWith('video/')) {
-        // Video Moderation
-        const formData = new FormData();
-        formData.append('video', selectedFile);
-        formData.append('blur_radius', imageSliderValue.toString());
-        formData.append('mask_char', maskCharacter);
-        formData.append('project_name', projectName || 'video_project_1');
-        response = await fetch('http://localhost:5000/videomoderation', {
-          method: 'POST',
-          headers: {
-            'Authorization': authToken
-          },
-          body: formData
-        });
-        if (response.ok) {
-          data = await response.json();
-          navigate('/multimedia-output', {
-            state: {
-              moderatedVideoPath: data.moderated_video_path,
-              imageDetections: data.image_detections,
-              textModeratedData: data.text_moderated_data,
-              projectName: projectName || 'video_project_1',
-              videoUrl: URL.createObjectURL(selectedFile)
-            }
-          });
-        } else {
-          alert('Video moderation failed.');
-        }
-      } else {
-        alert('Unsupported file type.');
-      }
-    } catch (err) {
-      alert('Error connecting to moderation API.');
-    }
-    setIsProcessing(false);
+    setIsProcessing(true);
+    try {
+      let response, data;
+      const authToken = localStorage.getItem('auth_token');
+      if (selectedFile.type && selectedFile.type.startsWith('image/')) {
+        // ...existing code...
+        // Image Moderation
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('blur_radius', imageSliderValue.toString());
+        formData.append('project_name', projectName || 'image_project_1');
+        response = await fetch('http://localhost:5000/imgmoderation', {
+          method: 'POST',
+          headers: {
+            'Authorization': authToken
+          },
+          body: formData
+        });
+        if (response.ok) {
+          data = await response.json();
+          navigate('/image-output', {
+            state: {
+              bluredImagePath: data.blured_image_path,
+              harmfulDetected: data.harmful_detected,
+              isFlagged: data.isFlagged,
+              projectName: projectName || 'image_project_1',
+              imageUrl: URL.createObjectURL(selectedFile),
+              blurRadius: imageSliderValue,
+              originalFileName: selectedFile.name
+            }
+          });
+        } else {
+          alert('Image moderation failed.');
+        }
+      } else if (selectedFile.type && selectedFile.type.startsWith('audio/')) {
+        // ...existing code...
+        // Audio Moderation
+        const formData = new FormData();
+        formData.append('audio', selectedFile);
+        formData.append('mask_char', maskCharacter);
+        customWords.forEach(word => formData.append('words', word));
+        formData.append('project_name', projectName || 'audio_project_1');
+        response = await fetch('http://localhost:5000/audiomoderation', {
+          method: 'POST',
+          headers: {
+            'Authorization': authToken
+          },
+          body: formData
+        });
+        if (response.ok) {
+          data = await response.json();
+          navigate('/multimedia-output', {
+            state: {
+              outputPath: data.output_path,
+              profanityData: data.profanity_data,
+              projectName: projectName || 'audio_project_1',
+              audioUrl: URL.createObjectURL(selectedFile)
+            }
+          });
+        } else {
+          alert('Audio moderation failed.');
+        }
+      } else if (selectedFile.type && selectedFile.type.startsWith('video/')) {
+        // ...existing code...
+        // Video Moderation
+        const formData = new FormData();
+        formData.append('video', selectedFile);
+        formData.append('blur_radius', imageSliderValue.toString());
+        formData.append('mask_char', maskCharacter);
+        formData.append('project_name', projectName || 'video_project_1');
+        response = await fetch('http://localhost:5000/videomoderation', {
+          method: 'POST',
+          headers: {
+            'Authorization': authToken
+          },
+          body: formData
+        });
+        if (response.ok) {
+          data = await response.json();
+          navigate('/multimedia-output', {
+            state: {
+              moderatedVideoPath: data.moderated_video_path,
+              imageDetections: data.image_detections,
+              textModeratedData: data.text_moderated_data,
+              projectName: projectName || 'video_project_1',
+              videoUrl: URL.createObjectURL(selectedFile)
+            }
+          });
+        } else {
+          alert('Video moderation failed.');
+        }
+      } else if (selectedFile.name && selectedFile.name.endsWith('.txt')) {
+        // TXT Moderation
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('mask_char', maskCharacter);
+        customWords.forEach(word => formData.append('custom_words', word));
+        formData.append('project_name', projectName || 'MyTextFileModerationProject');
+        response = await fetch('http://localhost:5000/txtmoderation', {
+          method: 'POST',
+          headers: {
+            'Authorization': authToken
+          },
+          body: formData
+        });
+        if (response.ok) {
+          data = await response.json();
+          navigate('/textfile-output', {
+            state: {
+              moderatedFilePath: data.moderated_file_path,
+              report: data.report,
+              projectName: projectName || 'MyTextFileModerationProject',
+              originalFileName: selectedFile.name
+            }
+          });
+        } else {
+          alert('Text file moderation failed.');
+        }
+      } else {
+        alert('Unsupported file type.');
+      }
+    } catch (err) {
+      alert('Error connecting to moderation API.');
+    }
+    setIsProcessing(false);
   };
 
   const handleKeyPress = (e) => {
