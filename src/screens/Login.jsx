@@ -112,6 +112,12 @@ const LoginPage = () => {
 
           {error && <p style={{ color: '#ff6b6b', fontSize: '14px', margin: '10px 0 0' }}>{error}</p>}
 
+          <p style={{ textAlign: 'right', margin: '0' }}>
+            <a href="/forgot" style={{ color: '#4086ffff', textDecoration: 'none', fontSize: '14px', fontWeight: '400' }}>
+              Forgot password?
+            </a>
+          </p>
+
           <button
             type="submit"
             style={{
